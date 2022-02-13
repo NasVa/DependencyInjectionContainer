@@ -15,9 +15,15 @@ namespace DependencyInjectionContainer
             registeredTypes = new Dictionary<Type, List<Dependency>>();
         }
 
-        public void RegisterType<TInterface, TImplementation> (bool isSinglton)
+        public void RegisterPair<TInterface, TImplementation> (bool isSinglton)
         {
             var newRegisterPair = new Dependency(typeof(TInterface), typeof(TImplementation), isSinglton);
+            registeredTypes.Add(typeof(TInterface), new List<Dependency>() { newRegisterPair });
+        }
+
+        public void RegisterPair<TInterface>(bool isSinglton)
+        {
+            var newRegisterPair = new Dependency(typeof(TInterface), typeof(TInterface), isSinglton);
             registeredTypes.Add(typeof(TInterface), new List<Dependency>() { newRegisterPair });
         }
     }

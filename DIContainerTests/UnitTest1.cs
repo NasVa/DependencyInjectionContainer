@@ -17,10 +17,17 @@ namespace DIContainerTests
         [Test]
         public void AddNewPairTest()
         {
-            configuration.RegisterType<IService, ServiceImpl> (false);
+            configuration.RegisterPair<IService, ServiceImpl>(false);
             configuration.registeredTypes.TryGetValue(typeof(IService), out List<Dependency> types);
             Assert.AreEqual(types[0].implementationType, typeof(ServiceImpl));
         }
 
+        [Test]
+        public void addNewPairAsSelfTest()
+        {
+            configuration.RegisterPair<IService>(false);
+            configuration.registeredTypes.TryGetValue(typeof(IService), out List<Dependency> types);
+            Assert.AreEqual(types[0].implementationType, typeof(IService));
+        }
     }
 }
