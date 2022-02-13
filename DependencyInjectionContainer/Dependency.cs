@@ -8,7 +8,7 @@ namespace DependencyInjectionContainer
 {
     class Dependency
     {
-        public int lifeTime;
+        public bool isSingleton;
 
         public Type interfaceType { get; }
 
@@ -16,9 +16,9 @@ namespace DependencyInjectionContainer
 
         public object instance;
 
-        public Dependency(int lifeTime, Type interfaceType, Type implementationType)
+        public Dependency(Type interfaceType, Type implementationType, bool isSinglton)
         {
-            this.lifeTime = lifeTime;
+            this.isSingleton = isSinglton;
             this.interfaceType = interfaceType;
             this.implementationType = implementationType;
             instance = null;
