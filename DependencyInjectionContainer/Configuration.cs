@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DependencyInjectionContainer
 {
-    class Configuration
+    public class Configuration
     {
         public Dictionary<Type, List<Dependency>> registeredTypes;
 
@@ -15,9 +15,10 @@ namespace DependencyInjectionContainer
             registeredTypes = new Dictionary<Type, List<Dependency>>();
         }
 
-        public void RegisterType (Type Interface, Type Implementation)
+        public void RegisterType<TInterface, TImplementation> (bool isSinglton)
         {
-            //registeredTypes.Add(Interface, new List<Dependency>() { Implementation };
+            var newRegisterPair = new Dependency(typeof(TInterface), typeof(TImplementation), isSinglton);
+            registeredTypes.Add(typeof(TInterface), new List<Dependency>() { newRegisterPair });
         }
     }
 }

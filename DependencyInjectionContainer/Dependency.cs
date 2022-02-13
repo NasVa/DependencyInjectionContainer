@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DependencyInjectionContainer
 {
-    class Dependency
+    public class Dependency
     {
         public bool isSingleton;
 
