@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DependencyInjectionContainer
 {
-    class Container
+    public class Container
     {
         public Configuration configuration;
 
@@ -38,22 +38,22 @@ namespace DependencyInjectionContainer
                 throw new Exception("No such type dependency");
             }
 
-            return (T)CreateInstance(dependency, curType);
+            return (T)GetInstance(dependency, curType);
         }
 
-        public object CreateInstance(Dependency dependency, Type curtype)
+        public object GetInstance(Dependency dependency, Type curtype)
         {
             if (dependency.isSingleton)
             {
                 if(dependency.instance == null)
                 {
-                    dependency.instance = GetInstance(dependency.interfaceType, curtype);
+                    dependency.instance = Instantiate(dependency.interfaceType, curtype);
                 }
                 return dependency.instance;
             }
             else
             {
-                object instance = GetInstance(dependency.interfaceType, curtype);
+                object instance = Instantiate(dependency.interfaceType, curtype);
                 return instance;
             }
         }
@@ -72,7 +72,7 @@ namespace DependencyInjectionContainer
                 IEnumerable<Dependency> registeredTypes = configuration.GetAllImplementations(type);
                 foreach (Dependency item in registeredTypes)
                 {
-                    collection.Add(GetInstance(item.implementationType, currType));
+                    collection.Add(GetInstance(item, currType));
                 }
                 return collection;
             }
@@ -83,7 +83,7 @@ namespace DependencyInjectionContainer
         }
 
 
-        public object GetInstance(Type type, Type curtype)
+        public object Instantiate(Type type, Type curtype)
         {
             Dependency dependency = configuration.GetImplementation(type);
             if (dependency != null)
@@ -92,7 +92,7 @@ namespace DependencyInjectionContainer
                 {
                     stack.Push(dependency.interfaceType);
                     Type instanceType = dependency.implementationType;
-                    if (instanceType.IsGenericType)
+                    if (instanceType.IsGenericTypeDefinition)
                     {
                         instanceType = instanceType.MakeGenericType(curtype.GenericTypeArguments);
                     }
@@ -142,7 +142,7 @@ namespace DependencyInjectionContainer
             object[] parameters = new object[parametersInfo.Length];
             for (int i = 0; i < parametersInfo.Length; i++)
             {
-                parameters[i] = GetInstance(configuration.GetImplementation(parametersInfo[i].ParameterType).implementationType, currType);
+                parameters[i] = GetInstance(configuration.GetImplementation(parametersInfo[i].ParameterType), currType);
             }
             return parameters;
         }

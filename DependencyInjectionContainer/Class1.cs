@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DIContainerTests
+namespace DependencyInjectionContainer
 {
     public interface ITestInterface1 { }
     public abstract class TestAbstractClass1 : ITestInterface1 { }
