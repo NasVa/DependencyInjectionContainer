@@ -16,9 +16,9 @@ namespace DependencyInjectionContainer
 
         public object instance;
 
-        public Dependency(Type interfaceType, Type implementationType, bool isSinglton)
+        public Dependency(Type interfaceType, Type implementationType, bool isSingleton)
         {
-            this.isSingleton = isSinglton;
+            this.isSingleton = isSingleton;
             this.interfaceType = interfaceType;
             this.implementationType = implementationType;
             instance = null;
