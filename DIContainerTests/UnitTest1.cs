@@ -29,5 +29,17 @@ namespace DIContainerTests
             configuration.registeredTypes.TryGetValue(typeof(IService), out List<Dependency> types);
             Assert.AreEqual(types[0].implementationType, typeof(IService));
         }
+        
+        [Test]
+
+        public void addNewPairTypesTest()
+        {
+            configuration.RegisterPair(typeof(Class1), typeof(Class2), false);
+            configuration.registeredTypes.TryGetValue(typeof(Class1), out List<Dependency> types);
+            Console.WriteLine(types[0].implementationType);
+            Console.WriteLine(typeof(Class2));
+            Assert.AreEqual(types[0].implementationType, typeof(Class2));
+
+        }
     }
 }
