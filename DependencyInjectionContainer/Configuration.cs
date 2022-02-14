@@ -17,14 +17,63 @@ namespace DependencyInjectionContainer
 
         public void RegisterPair<TInterface, TImplementation> (bool isSinglton)
         {
-            var newRegisterPair = new Dependency(typeof(TInterface), typeof(TImplementation), isSinglton);
-            registeredTypes.Add(typeof(TInterface), new List<Dependency>() { newRegisterPair });
+            if (!typeof(TImplementation).IsInterface && typeof(TImplementation).IsAbstract && typeof(TInterface).IsAssignableFrom(typeof(TImplementation)))
+            {
+                var newRegisterPair = new Dependency(typeof(TInterface), typeof(TImplementation), isSinglton);
+                if (!registeredTypes.TryGetValue(typeof(TInterface), out List<Dependency> types))
+                {
+                    registeredTypes.Add(typeof(TInterface), new List<Dependency>() { newRegisterPair });
+                }
+                else
+                {
+                    Console.WriteLine($"TInterface {typeof(TInterface).Name} is already registered.");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"The pair <{typeof(TInterface).Name}, {typeof(TImplementation).Name}> can't be registered");
+            }
         }
 
         public void RegisterPair<TInterface>(bool isSinglton)
         {
-            var newRegisterPair = new Dependency(typeof(TInterface), typeof(TInterface), isSinglton);
-            registeredTypes.Add(typeof(TInterface), new List<Dependency>() { newRegisterPair });
+            if (!typeof(TInterface).IsInterface && typeof(TInterface).IsAbstract && typeof(TInterface).IsAssignableFrom(typeof(TInterface)))
+            {
+                var newRegisterPair = new Dependency(typeof(TInterface), typeof(TInterface), isSinglton);
+                if (!registeredTypes.TryGetValue(typeof(TInterface), out List<Dependency> types))
+                {
+                    registeredTypes.Add(typeof(TInterface), new List<Dependency>() { newRegisterPair });
+                }
+                else
+                {
+                    Console.WriteLine($"TInterface {typeof(TInterface).Name} is already registered.");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"The pair <{typeof(TInterface).Name}, {typeof(TInterface).Name}> can't be registered");
+            }
+
+        }
+
+        public void RegisterPair(Type TInterface, Type TImplementation, bool isSinglton)
+        {
+            if (!TImplementation.IsInterface && TImplementation.IsAbstract && TInterface.IsAssignableFrom(TImplementation))
+            {
+                var newRegisterPair = new Dependency(TInterface, TImplementation, isSinglton);
+                if (!registeredTypes.TryGetValue(TInterface, out List<Dependency> types))
+                {
+                    registeredTypes.Add(TInterface, new List<Dependency>() { newRegisterPair });
+                }
+                else
+                {
+                    Console.WriteLine($"TInterface {TInterface.Name} is already registered.");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"The pair <{TInterface.Name}, {TInterface.Name}> can't be registered");
+            }
         }
     }
 }
