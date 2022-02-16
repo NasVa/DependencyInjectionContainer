@@ -15,7 +15,7 @@ namespace DependencyInjectionContainer
             registeredTypes = new Dictionary<Type, List<Dependency>>();
         }
 
-        public void RegisterPair<TInterface, TImplementation> (bool isSingleton)
+        public void RegisterPair<TInterface, TImplementation>(bool isSingleton)
         {
             if (!typeof(TImplementation).IsInterface && !typeof(TImplementation).IsAbstract && typeof(TInterface).IsAssignableFrom(typeof(TImplementation)))
             {
@@ -39,6 +39,18 @@ namespace DependencyInjectionContainer
             else
             {
                 Console.WriteLine($"The pair <{typeof(TInterface).Name}, {typeof(TImplementation).Name}> can't be registered");
+            }
+            if (typeof(TImplementation).IsInterface)
+            {
+                Console.WriteLine("interface");
+            }
+            if (typeof(TImplementation).IsAbstract)
+            {
+                Console.WriteLine("abst");
+            }
+            if (typeof(TInterface).IsAssignableFrom(typeof(TImplementation)))
+            {
+                Console.WriteLine("not impl");
             }
         }
 

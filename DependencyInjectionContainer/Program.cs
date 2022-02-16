@@ -9,11 +9,9 @@ namespace DependencyInjectionContainer
         {
             Configuration configuration = new Configuration();
             Container container = new Container(configuration);
-            configuration.RegisterPair<ITestInterface1, TestNonAbstractClass1>(false);
-            configuration.RegisterPair<ITestInterface1, TestNonAbstractClass2>(false);
-
-            var allImpls = container.ResolveAll<ITestInterface1>();
-
+            //configuration.RegisterPair<ITestInterface1, TestNAbstractClass2>(false);
+            //configuration.RegisterPair<TestNAbstractClass2>(false);
+            //configuration.registeredTypes.TryGetValue(typeof(IService), out List<Dependency> types);
         }
     }
 }

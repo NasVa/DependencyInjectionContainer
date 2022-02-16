@@ -82,10 +82,21 @@ namespace DIContainerTests
         public void ResolveAllTest()
         {
             configuration.RegisterPair<ITestInterface1, TestNonAbstractClass1>(false);
-            configuration.RegisterPair<ITestInterface1, TestNonAbstractClass2>(false);
+            //configuration.RegisterPair<ITestInterface1, TestNAbstractClass2>(false);
 
-            var allImpls = container.ResolveAll<ITestInterface1>();
+            var allImpls = container.Resolve<ITestInterface1>();
             Assert.IsNotNull(allImpls);
+        }
+
+        [Test]
+        public void CyclicDependencyTest()
+        {
+            configuration.RegisterPair<ITestInterface1, TestNAbstractClass1>(true);
+            configuration.RegisterPair<ITestInterface2, TestNonAbstracClass2>(true);
+            TestNAbstractClass1 class1 = (TestNAbstractClass1)container.Resolve<ITestInterface1>();
+            TestNonAbstracClass2 class2 = (TestNonAbstracClass2)container.Resolve<ITestInterface2>();
+            Assert.AreSame(class1.test2, class2);
+            Assert.AreSame(class2.test, class1);
         }
     }
 }

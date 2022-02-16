@@ -10,22 +10,28 @@ namespace DIContainerTests
     public abstract class TestAbstractClass1 : ITestInterface1 { }
 
     public interface ITestInterface2 { }
-    public abstract class TestAbstractClass2 : ITestInterface2 { }
+    public class TestNAbstractClass1 : ITestInterface1 {
+        public ITestInterface2 test2 { get; set; }
+
+        public TestNAbstractClass1(ITestInterface2 ntest)
+        {
+            test2 = ntest; 
+        }
+    }
+
+    public class TestNonAbstracClass2 : ITestInterface2
+    {
+        public ITestInterface1 test { get; set; }
+        public TestNonAbstracClass2(ITestInterface1 ntest)
+        {
+            test = ntest;
+        }
+    }
 
     public class TestNonAbstractClass1 : ITestInterface1 { }
 
     public class TestAbstractInheritance : TestAbstractClass1 { }
 
-    public class TestNonAbstractClass2 : ITestInterface1 { }
-
-    public class TestNonAbstracClass3 : ITestInterface2
-    {
-        public TestAbstractClass2 test;
-        public TestNonAbstracClass3(TestAbstractClass2 ntest)
-        {
-            test = ntest;
-        }
-    }
 
     public class TestGenericClass1<T>
     {

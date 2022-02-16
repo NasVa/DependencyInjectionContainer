@@ -12,58 +12,88 @@ namespace DependencyInjectionContainer
     {
         public Configuration configuration;
 
-        public Stack<Type> stack;
+        public List<Dependency> stack;
+        public List<object> objects;
+        bool isCyclic;
         public Container(Configuration configuration)
         {
             this.configuration = configuration;
-            this.stack = new Stack<Type>();
+            this.stack = new List<Dependency>();
+            objects = new List<object>(); 
+            isCyclic = false;
         }
 
         public T Resolve<T>() where T : class
         {
             var type = typeof(T);
-            var curType = type;
             Dependency dependency = configuration.GetImplementation(type);
-            if(type.IsGenericType && dependency == null)
-            {
-                dependency = configuration.GetImplementation(type);
-            }
-            else
-            {
-                dependency = configuration.GetImplementation(type);
-            }
 
             if(dependency == null)
             {
                 throw new Exception("No such type dependency");
             }
 
-            return (T)GetInstance(dependency, curType);
+            var result = (T)GetInstance(dependency);
+            if (isCyclic)
+            {
+                resolveCyclic();   
+            }
+            return result;
         }
 
-        public object GetInstance(Dependency dependency, Type curtype)
+        public void resolveCyclic()
+        {
+            foreach(object obj in objects)
+            {
+                Type t = obj.GetType();
+                PropertyInfo[] properties = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                Type ttttttt = obj.GetType();
+                foreach(PropertyInfo property in properties)
+                {
+                    var impl = configuration.GetImplementation(property.PropertyType);
+                    property.SetValue(obj, GetInstance(impl));
+                }
+            }
+        }
+
+        public object GetInstance(Dependency dependency)
         {
             if (dependency.isSingleton)
             {
-                if(dependency.instance == null)
+                if(dependency.instance != null)
                 {
-                    dependency.instance = Instantiate(dependency.interfaceType, curtype);
+                    return dependency.instance;
+                }
+
+                if (!stack.Contains(dependency))
+                {
+                    stack.Add(dependency);
+                    dependency.instance = Instantiate(dependency.interfaceType);
+                }
+                else
+                {
+                    isCyclic = true;
+                    return null;
+                }
+                if (dependency.instance != null)
+                {
+                    objects.Add(dependency.instance);
                 }
                 return dependency.instance;
             }
             else
             {
-                object instance = Instantiate(dependency.interfaceType, curtype);
+                object instance = Instantiate(dependency.interfaceType);
                 return instance;
             }
         }
 
         public IEnumerable<T> ResolveAll<T>() where T : class
         {
-            return (IEnumerable<T>)InstantiateEnumerable(typeof(T), typeof(T));
+            return (IEnumerable<T>)InstantiateEnumerable(typeof(T));
         }
 
-        private object InstantiateEnumerable(Type type, Type currType)
+        private object InstantiateEnumerable(Type type)
         {
             Dependency dependency = configuration.GetImplementation(type);
             if (dependency != null)
@@ -72,7 +102,7 @@ namespace DependencyInjectionContainer
                 IEnumerable<Dependency> registeredTypes = configuration.GetAllImplementations(type);
                 foreach (Dependency item in registeredTypes)
                 {
-                    collection.Add(GetInstance(item, currType));
+                    collection.Add(GetInstance(item));
                 }
                 return collection;
             }
@@ -83,66 +113,68 @@ namespace DependencyInjectionContainer
         }
 
 
-        public object Instantiate(Type type, Type curtype)
+        public object Instantiate(Type type)
         {
             Dependency dependency = configuration.GetImplementation(type);
             if (dependency != null)
             {
-                if (!stack.Contains(dependency.interfaceType))
+                Type instanceType = dependency.implementationType;
+                if (instanceType.IsGenericTypeDefinition)
                 {
-                    stack.Push(dependency.interfaceType);
-                    Type instanceType = dependency.implementationType;
-                    if (instanceType.IsGenericTypeDefinition)
-                    {
-                        instanceType = instanceType.MakeGenericType(curtype.GenericTypeArguments);
-                    }
-                    ConstructorInfo[] constructors = instanceType.GetConstructors().OrderByDescending(x => x.GetParameters().Length).ToArray();
+                    instanceType = instanceType.MakeGenericType(type.GenericTypeArguments);
+                }
+                ConstructorInfo[] constructors = instanceType.GetConstructors().OrderByDescending(x => x.GetParameters().Length).ToArray();
 
-                    int currentConstructor = 1;
-                    bool isCreated = false;
-                    object result = null;
-                    while (!isCreated && currentConstructor <= constructors.Length)
+                int currentConstructor = 1;
+                bool isCreated = false;
+                object result = null;
+                while (!isCreated && currentConstructor <= constructors.Length)
+                {
+                    try
                     {
-                        try
-                        {
-                            ConstructorInfo constructorInfo = constructors[currentConstructor - 1];
-                            object[] constructorParam = GetConstructorParam(constructorInfo, curtype);
-                            result = Activator.CreateInstance(instanceType, constructorParam);
-                            isCreated = true;
-                        }
-                        catch
-                        {
-                            isCreated = true;
-                            currentConstructor++;
-                        }
+                        ConstructorInfo constructorInfo = constructors[currentConstructor - 1];
+                        object[] constructorParam = GetConstructorParam(constructorInfo);
+                        result = Activator.CreateInstance(instanceType, constructorParam);
+                        isCreated = true;
                     }
-                    stack.Pop();
-                    if (isCreated)
+                    catch
                     {
-                        return result;
+                        isCreated = true;
+                        currentConstructor++;
                     }
-                    else
-                    {
-                        throw new Exception("Could not create instance type");
-                    }
+                }
+                if (isCreated)
+                {
+                    return result;
                 }
                 else
                 {
-                    throw new Exception("Could not resolve type");
+                    throw new Exception("Could not create instance type");
                 }
+                
             }
             else
             {
                 throw new Exception("No such type registered");
             }
+        
         }
-        private object[] GetConstructorParam(ConstructorInfo constructorInfo, Type currType)
+        private object[] GetConstructorParam(ConstructorInfo constructorInfo)
         {
             ParameterInfo[] parametersInfo = constructorInfo.GetParameters();
             object[] parameters = new object[parametersInfo.Length];
             for (int i = 0; i < parametersInfo.Length; i++)
             {
-                parameters[i] = GetInstance(configuration.GetImplementation(parametersInfo[i].ParameterType), currType);
+                if (!isCyclic){
+                    parameters[i] = GetInstance(configuration.GetImplementation(parametersInfo[i].ParameterType));
+                }
+                else
+                {
+                    foreach(Dependency dep in stack) {
+                        parameters[i] = configuration.GetImplementation(dep.interfaceType).instance;
+                    }
+                }
+            
             }
             return parameters;
         }
